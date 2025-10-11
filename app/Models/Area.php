@@ -2,43 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne; // CAMBIO: Usamos HasOne
+use Illuminate\Database\Eloquent\Relations\HasOne; 
 
 class Area extends Model
 {
-    use HasFactory;
-
-    /**
-     * Indica a Laravel que no gestione automáticamente las columnas created_at y updated_at.
-     */
-    public $timestamps = false;
-
-    /**
-     * Define los campos que se pueden asignar masivamente.
-     */
-    protected $fillable = [
-        'audiencia_id',
-        'nombre',
-        'slug',
-        'descripcion',
-    ];
+    protected $table = 'areas';
+    protected $fillable = ['audiencia_id', 'nombre', 'slug', 'descripcion'];
 
     /**
      * Define la relación con el modelo Audience.
      */
     public function audience(): BelongsTo
     {
-        return $this->belongsTo(Audience::class, 'audiencia_id');
+        return $this->belongsTo(Audiencia::class, 'audiencia_id');
     }
 
     /**
      * Define la relación con el modelo EstadisticaProblema.
      */
-    public function estadisticaProblema(): HasOne // CAMBIO: Relación uno a uno
+    public function estadistica(): HasOne
     {
-        return $this->hasOne(EstadisticaProblema::class);
+        return $this->hasOne(EstadisticaProblema::class, 'area_id');
+    }
+
+    public function temas(): HasMany
+    {
+        return $this->hasMany(Tema::class, 'area_id');
     }
 }
