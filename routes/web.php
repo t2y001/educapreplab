@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfesorController;
+use App\Http\Controllers\SimulacroController;
+use App\Http\Controllers\ProgresoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,7 +16,19 @@ Route::get('/', function () {
 });
 
 Route::get('/profesores', [ProfesorController::class, 'index'])->name('profesores.index');
-Route::get('/profesores/{area:slug}', [ProfesorController::class, 'showArea'])->name('profesores.area');
+Route::get('/profesores/{audienciaId}/{area:slug}', [ProfesorController::class, 'showArea'])
+->whereNumber('audienciaId')
+->name('profesores.area');
+
+// Simulacros (módulo aparte)
+Route::middleware('auth')->group(function(){
+  Route::get('/simulacros', [SimulacroController::class, 'index'])->name('simulacros.index');
+  Route::post('/simulacros/create', [SimulacroController::class, 'create'])->name('simulacros.create'); // arma instancia
+  Route::get('/simulacros/{exam}', [SimulacroController::class, 'show'])->name('simulacros.show');
+});
+
+// Registro de respuesta (para adaptativo)
+Route::post('/progreso/responder', [ProgresoController::class, 'store'])->name('progreso.responder');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

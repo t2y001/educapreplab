@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Audience extends Model
+class Audiencia extends Model
 {
-    use HasFactory;
+    protected $table = 'audiencias';
+    protected $fillable = ['nombre', 'descripcion'];
 
     /**
      * Define la relación con el modelo Area.

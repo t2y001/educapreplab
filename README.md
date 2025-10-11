@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
@@ -59,3 +60,39 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+=======
+# 🚀 EducaPrepLab
+
+Plataforma de e-learning enfocada en la preparación para exámenes de nombramiento y ascenso docente (MINEDU) y para estudiantes de bachillerato.
+
+---
+
+### ## 🎯 Sobre el Proyecto
+
+**EducaPrepLab** es una aplicación web interactiva diseñada para ofrecer una experiencia de estudio moderna y eficaz. La plataforma permite a los usuarios practicar con un extenso banco de preguntas, armar simulacros personalizados, y recibir retroalimentación detallada para medir su progreso.
+
+La Fase 1 se centra en la creación y validación de contenido propio, con una visión a futuro de expandirse a un modelo de marketplace donde educadores expertos puedan contribuir y monetizar su propio material de estudio.
+
+---
+
+### ## 💻 Stack Tecnológico
+
+Este proyecto está construido con una arquitectura monolítica moderna, combinando la robustez de un backend en PHP con la fluidez de un frontend en JavaScript/TypeScript.
+
+* **Backend:** **Laravel**
+* **Frontend:** **React** con **TypeScript**
+* **Puente Backend-Frontend:** **Inertia.js**
+* **Herramienta de Construcción:** **Vite**
+* **Estilos y UI:** **Tailwind CSS** + **shadcn/ui**
+* **Base de Datos:** **MySQL**
+
+---
+
+### ## ✨ Características Principales
+
+* Sistema de autenticación de usuarios.
+* Navegación por áreas curriculares y temas.
+* Interfaz de resolución de problemas interactiva.
+* Sistema de calificación y visualización de soluciones.
+* Diseño responsivo para dispositivos móviles y de escritorio.
+>>>>>>> e4cf114c9a0aadd8a774a7084e1cd60a1689eb14

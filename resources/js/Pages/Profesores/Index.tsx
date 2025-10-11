@@ -11,6 +11,7 @@ interface Subject {
   description: string;
   problemCount: number;
   link: string;
+  topics?: string[]
 }
 interface SubjectWithAssets extends Subject {
   image: string;
@@ -41,10 +42,15 @@ export default function ProfesoresPage({ subjects }: { subjects: Subject[] }) {
     // Combinamos los datos del backend con los assets del frontend.
     const subjectsWithAssets: SubjectWithAssets[] = subjects
         .filter(subject => subject.id in subjectAssets) // Filtra para evitar errores si un subject no tiene assets
-        .map(subject => ({
-            ...subject,
-            ...subjectAssets[subject.id] // Combina con los assets locales
-        }));
+        .map(subject => {
+			const assets = subjectAssets[subject.id];
+			return {
+				...subject,
+				image: assets.image,
+				icon: assets.icon,
+				topics: subject.topics && subject.topics.length > 0 ? subject.topics:assets.topics,
+			};
+        });
 
 	return (
 		<>
