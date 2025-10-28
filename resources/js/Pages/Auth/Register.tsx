@@ -1,9 +1,11 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
+import { useEffect, FormEventHandler, ReactNode } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import InputError from '@/Components/InputError';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { route } from 'ziggy-js';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -13,29 +15,32 @@ export default function Register() {
         password_confirmation: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        return () => {
+            reset('password', 'password_confirmation');
+        };
+    }, []);
 
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(route('register'));
     };
 
     return (
-        <GuestLayout>
-            <Head title="Register" />
+        <>
+            <Head title="Registrarse" />
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <Label htmlFor="name">Nombre</Label>
 
-                    <TextInput
+                    <Input
                         id="name"
                         name="name"
                         value={data.name}
                         className="mt-1 block w-full"
                         autoComplete="name"
-                        isFocused={true}
+                        autoFocus
                         onChange={(e) => setData('name', e.target.value)}
                         required
                     />
@@ -44,9 +49,9 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
+                    <Label htmlFor="email">Correo Electrónico</Label>
 
-                    <TextInput
+                    <Input
                         id="email"
                         type="email"
                         name="email"
@@ -61,9 +66,9 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <Label htmlFor="password">Contraseña</Label>
 
-                    <TextInput
+                    <Input
                         id="password"
                         type="password"
                         name="password"
@@ -78,43 +83,40 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
+                    <Label htmlFor="password_confirmation">Confirmar Contraseña</Label>
 
-                    <TextInput
+                    <Input
                         id="password_confirmation"
                         type="password"
                         name="password_confirmation"
                         value={data.password_confirmation}
                         className="mt-1 block w-full"
                         autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                         required
                     />
 
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="flex items-center justify-end mt-4">
                     <Link
                         href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="underline text-sm text-muted-foreground hover:text-foreground"
                     >
-                        Already registered?
+                        ¿Ya tienes una cuenta?
                     </Link>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
+                    <Button className="ms-4" disabled={processing}>
+                        Registrarse
+                    </Button>
                 </div>
             </form>
-        </GuestLayout>
+        </>
     );
 }
+
+// Asignar el layout para invitados
+Register.layout = (page: ReactNode) => (
+    <GuestLayout children={page} />
+);

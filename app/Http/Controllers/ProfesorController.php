@@ -294,5 +294,9 @@ class ProfesorController extends Controller
     ]);
 }
 
+public function subscriptionPage() {
+    return Inertia::render('SubscriptionPage');
+}
+
 
 }
