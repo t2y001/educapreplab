@@ -3,10 +3,28 @@ import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Badge } from "@/Components/ui/badge";
 import { Toaster, toast } from "sonner"; // Importamos Toaster
-import { BookOpen, Target, TrendingUp, Trophy, LogOut, Users } from "lucide-react";
+import { BookOpen, Target, TrendingUp, Trophy, LogOut, Users, Calendar, BarChart} from "lucide-react";
 import { PageProps } from '@/types'; // Importamos los tipos de Inertia
 import { route } from 'ziggy-js';
 
+interface WeakTopic {
+    name: string;
+    accuracy: number;
+    link: string;
+}
+
+interface PersonalStats {
+    practiceStreak: number;
+    overallAccuracy: number;
+    communityAverage: number;
+    weakestTopics: WeakTopic[];
+}
+
+interface CommunityChallenge {
+    title: string;
+    description: string;
+    link: string;
+}
 // Definimos los tipos para las props que recibimos del controlador
 interface DashboardProps extends PageProps {
     stats: {
@@ -14,11 +32,13 @@ interface DashboardProps extends PageProps {
         problemsSolved: number;
         successRate: number;
     };
+    personalStats: PersonalStats;
+    communityChallenge: CommunityChallenge;
 }
 
 export default function Dashboard() {
     // Obtenemos las props (incluyendo 'auth' y 'stats')
-    const { auth, stats } = usePage<DashboardProps>().props;
+    const { auth, stats, personalStats, communityChallenge} = usePage<DashboardProps>().props;
     const user = auth.user;
 
     // Función de Logout adaptada a Inertia
@@ -155,6 +175,96 @@ export default function Dashboard() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    <div className="mt-8">
+                        <h2 className="text-2xl font-bold text-foreground mb-6">Tu Progreso Detallado</h2>
+  
+                        <div className="grid gap-6 md:grid-cols-3">
+    
+                            {/* --- Tarjeta: Puntos a Reforzar --- */}
+                            <Card className="md:col-span-2 hover:shadow-lg transition-shadow">
+                                <CardHeader>
+                                    <div className="flex items-center gap-3">
+                                        <Target className="h-6 w-6 text-destructive" />
+                                        <CardTitle>Mis 3 Puntos a Reforzar</CardTitle>
+                                    </div>
+                                    <CardDescription>
+                                        Tu diagnóstico basado en las últimas prácticas. ¡Enfócate aquí!
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+        <ul className="space-y-4">
+          {personalStats.weakestTopics.map((topic) => (
+            <li key={topic.name}>
+              <Link href={topic.link} className="block p-4 rounded-lg bg-accent hover:bg-muted/80 transition-colors">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-foreground">{topic.name}</span>
+                  <span className="text-sm font-bold text-destructive">{topic.accuracy}%</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Tu precisión está por debajo del promedio. ¡Vamos a reforzar!
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+
+    {/* --- Tarjeta: Racha y Comparativa --- */}
+    <div className="space-y-6">
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Calendar className="h-6 w-6 text-primary" />
+            <CardTitle>Racha de Práctica</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-center">
+          <div className="text-6xl font-bold text-primary">
+            🔥 {personalStats.practiceStreak}
+          </div>
+          <p className="text-muted-foreground mt-2">días seguidos practicando</p>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <BarChart className="h-6 w-6 text-secondary" />
+            <CardTitle>Tu Comparativa</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="flex justify-around gap-4 text-center">
+          <div>
+            <div className="text-3xl font-bold text-primary">{personalStats.overallAccuracy}%</div>
+            <p className="text-sm text-muted-foreground">Tu Precisión</p>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-muted-foreground">{personalStats.communityAverage}%</div>
+            <p className="text-sm text-muted-foreground">Promedio</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+
+  {/* --- Tarjeta: Desafío de la Comunidad --- */}
+  <Card className="mt-6 hover:shadow-lg transition-shadow bg-gradient-to-r from-secondary/10 to-transparent">
+    <CardHeader className="flex flex-row items-center justify-between">
+      <div>
+        <div className="flex items-center gap-3">
+          <Trophy className="h-6 w-6 text-secondary" />
+          <CardTitle>{communityChallenge.title}</CardTitle>
+        </div>
+        <CardDescription className="mt-2">{communityChallenge.description}</CardDescription>
+      </div>
+      <Button asChild>
+        <Link href={communityChallenge.link}>Intentar el Ítem</Link>
+      </Button>
+    </CardHeader>
+  </Card>
+</div>
                 </main>
             </div>
         </>
