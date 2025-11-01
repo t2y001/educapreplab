@@ -16,6 +16,10 @@ import { ContentBlocks } from "@/Components/ContentBlocks";
 import { ChoicesList } from "@/Components/ChoicesList";
 
 import type {PageProps as InertiaPageProps} from "@inertiajs/core";
+
+import { route } from 'ziggy-js';
+
+
 // ================== Tipos ==================
 type Block = any; // (ya lo tipaste dentro de ContentBlocks)
 type ChoiceDTO = { label: 'A'|'B'|'C'; content_json: Block[] };
@@ -768,17 +772,33 @@ export default function SubjectPage() {
       {/* Modal Upsell (suscripción) */}
       {showUpsell && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-card p-6 rounded-xl shadow-xl max-w-sm w-full space-y-4">
-            <h3 className="text-lg font-semibold">Función para suscriptores</h3>
-            <p className="text-sm text-muted-foreground">
-              Los simulacros y el entrenamiento aleatorio adaptativo están disponibles con suscripción activa.
-            </p>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowUpsell(false)}>Cancelar</Button>
-              <Link href="/suscripcion"><Button>Suscribirme</Button></Link>
+          {isSubscriber === false && !props.auth?.user ? (
+            // --- Modal para INVITADOS ---
+            <div className="bg-card p-6 rounded-xl shadow-xl max-w-sm w-full space-y-4 text-center">
+              <h3 className="text-lg font-semibold">Crea una cuenta para continuar</h3>
+              <p className="text-sm text-muted-foreground">
+                Regístrate gratis para acceder a más funciones y guardar tu progreso.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                <Button variant="outline" onClick={() => setShowUpsell(false)}>Más tarde</Button>
+                <Link href={route('register')} className="w-full sm:w-auto"><Button className="w-full">Registrarse Gratis</Button></Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            // --- Modal para USUARIOS REGISTRADOS (no suscriptores) ---
+            <div className="bg-card p-6 rounded-xl shadow-xl max-w-sm w-full space-y-4 text-center">
+              <h3 className="text-lg font-semibold">Desbloquea todo el potencial</h3>
+              <p className="text-sm text-muted-foreground">
+                Accede a todas las soluciones, simulacros ilimitados y modo adaptativo con el plan Premium.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                <Button variant="outline" onClick={() => setShowUpsell(false)}>Cancelar</Button>
+                <Link href={route('subscription.page')} className="w-full sm:w-auto"><Button className="w-full">Ver Planes</Button></Link>
+              </div>
+            </div>
+          )}
         </div>
+        
       )}
     </div>
   );

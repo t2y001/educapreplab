@@ -54,7 +54,26 @@ export default function ProfesoresPage({ subjects }: { subjects: Subject[] }) {
 
 	return (
 		<>
-            <Head title="Portal para Docentes" />
+            <Head>
+                {/* Título específico y optimizado para SEO */}
+                <title>Prepárate para el examen de ascenso y/o nombramiento</title>
+
+                {/* Meta Descripción para Google */}
+                <meta name="description" content="Explora casuísticas de áreas curriculares como Ciencia y Tecnología o Matemática. Practica con casuísticas de exámenes de MINEDU y elaborados por nuestros especialista." />
+
+                {/* Open Graph (Facebook, WhatsApp, etc.) */}
+                <meta property="og:title" content="Portal para Docentes - EducaPrepLab" />
+                <meta property="og:description" content="Herramientas y recursos para tu nombramiento, ascenso y desarrollo profesional." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://educapreplab.com/profesores" />
+                <meta property="og:image" content="https://educapreplab.com/images/og-profesores-main.png" />
+
+                {/* Twitter Card (para X) */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Portal para Docentes - EducaPrepLab" />
+                <meta name="twitter:description" content="Herramientas y recursos para tu nombramiento, ascenso y desarrollo profesional." />
+                <meta name="twitter:image" content="https://educapreplab.com/images/og-profesores-main.png" />
+            </Head>
 
 			{/* Carousel Section */}
 			<section className="relative h-[50vh] bg-gray-800 text-white flex items-center justify-center">
