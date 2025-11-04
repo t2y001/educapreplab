@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\SimulacroController;
 use App\Http\Controllers\ProgresoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\AdminInquiryController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\Area;
 use Illuminate\Foundation\Application;
@@ -51,5 +52,33 @@ Route::get('register', function () {
         'canLogin' => Route::has('login')
     ]);
 })->middleware('guest')->name('register');
+
+// --- GRUPO DE RUTAS DE ADMINISTRADOR ---
+// Verificar que tienes un Middleware 'isAdmin' o similar
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Ruta principal del admin de indagaciones (la lista)
+    Route::get('/indagaciones', [AdminInquiryController::class, 'index'])
+        ->name('inquiries.index');
+
+    // Ruta para mostrar el formulario de creación
+    Route::get('/indagaciones/crear', [AdminInquiryController::class, 'create'])
+        ->name('inquiries.create');
+
+    // Ruta para guardar la nueva indagación
+    Route::post('/indagaciones', [AdminInquiryController::class, 'store'])
+        ->name('inquiries.store');
+
+    // Ruta para mostrar el formulario de edición
+    Route::get('/indagaciones/{inquiry}/editar', [AdminInquiryController::class, 'edit'])
+        ->name('inquiries.edit');
+
+    // Ruta para actualizar una indagación existente
+    Route::put('/indagaciones/{inquiry}', [AdminInquiryController::class, 'update'])
+        ->name('inquiries.update');
+
+    // Ruta para eliminar una indagación
+    Route::delete('/indagaciones/{inquiry}', [AdminInquiryController::class, 'destroy'])
+        ->name('inquiries.destroy');
+});
 
 require __DIR__.'/auth.php';
