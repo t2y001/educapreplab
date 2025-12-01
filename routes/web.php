@@ -36,10 +36,27 @@ Route::post('/progreso/responder', [ProgresoController::class, 'store'])->name('
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
+// Inquiry routes
+Route::middleware('auth')->group(function () {
+    Route::get('/indagacion/{inquiry}', [App\Http\Controllers\InquiryController::class, 'show'])->name('inquiry.show');
+    Route::post('/indagacion/{inquiry}/progress', [App\Http\Controllers\InquiryController::class, 'saveProgress'])->name('inquiry.progress');
+    Route::post('/indagacion/{inquiry}/complete', [App\Http\Controllers\InquiryController::class, 'complete'])->name('inquiry.complete');
+});
+
+// Admin routes
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('inquiries', App\Http\Controllers\Admin\InquiryAdminController::class);
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Gamification page
+    Route::get('/mi-progreso', function () {
+        return Inertia::render('Gamification/Index');
+    })->name('gamification.index');
 });
 
 Route::get('/suscripcion', [ProfesorController::class, 'subscriptionPage'])->name('subscription.page');
@@ -52,6 +69,20 @@ Route::get('register', function () {
         'canLogin' => Route::has('login')
     ]);
 })->middleware('guest')->name('register');
+
+
+// --- GRUPO DE RUTAS DE PROFESORES ---
+Route::middleware(['auth', 'verified', 'profesor'])->prefix('profesor')->name('profesor.')->group(function () {
+    // Dashboard del profesor
+    Route::get('/dashboard', [App\Http\Controllers\Profesor\ProfesorDashboardController::class, 'index'])
+        ->name('dashboard');
+    
+    // CRUD de Items
+    Route::resource('items', App\Http\Controllers\Profesor\ProfesorItemController::class);
+    
+    // CRUD de Indagaciones
+    Route::resource('indagaciones', App\Http\Controllers\Profesor\ProfesorInquiryController::class);
+});
 
 // --- GRUPO DE RUTAS DE ADMINISTRADOR ---
 // Verificar que tienes un Middleware 'isAdmin' o similar
@@ -79,6 +110,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Ruta para eliminar una indagación
     Route::delete('/indagaciones/{inquiry}', [AdminInquiryController::class, 'destroy'])
         ->name('inquiries.destroy');
+});
+
+// Gamification API Routes
+Route::middleware('auth')->prefix('api/gamification')->group(function () {
+    Route::get('/stats', [App\Http\Controllers\Api\GamificationController::class, 'getStats']);
+    Route::get('/achievements', [App\Http\Controllers\Api\GamificationController::class, 'getAchievements']);
+    Route::post('/award-xp', [App\Http\Controllers\Api\GamificationController::class, 'awardXp']);
+    Route::get('/leaderboard', [App\Http\Controllers\Api\GamificationController::class, 'getLeaderboard']);
 });
 
 require __DIR__.'/auth.php';

@@ -224,19 +224,42 @@ class SimulacroController extends Controller
 
         $itemIds = $blockItems->flatten()->pluck('item_id')->unique()->all();
 
-        // Contenidos ítems
-        $itemContents = DB::table('item_contents')
-            ->select('item_id','content_json')
-            ->whereIn('item_id', $itemIds)
-            ->where('is_current', true)
+        // Contenidos ítems (optimizado: items.question_json primero, luego item_contents)
+        $itemsWithContent = DB::table('items')
+            ->select('id', 'question_json')
+            ->whereIn('id', $itemIds)
             ->get()
-            ->keyBy('item_id');
+            ->keyBy('id');
+        
+        $missingIds = [];
+        foreach ($itemsWithContent as $id => $item) {
+            if (!$item->question_json) {
+                $missingIds[] = $id;
+            }
+        }
+        
+        $legacyContents = collect();
+        if (!empty($missingIds)) {
+            $legacyContents = DB::table('item_contents')
+                ->select('item_id', 'content_json')
+                ->whereIn('item_id', $missingIds)
+                ->where('is_current', true)
+                ->get()
+                ->keyBy('item_id');
+        }
+        
+        $itemContents = $itemsWithContent->map(function($item) use ($legacyContents) {
+            return (object)[
+                'item_id' => $item->id,
+                'content_json' => $item->question_json ?? ($legacyContents[$item->id]->content_json ?? null)
+            ];
+        })->keyBy('item_id');
 
         // Choices
         $choicesRows = DB::table('choices')
-            ->select('item_id','label','content_json')
+            ->select('item_id','letter','content_json')
             ->whereIn('item_id', $itemIds)
-            ->orderBy('label')
+            ->orderBy('letter')
             ->get()
             ->groupBy('item_id');
 
@@ -254,6 +277,7 @@ class SimulacroController extends Controller
             ->groupBy('item_id')
             ->get()
             ->keyBy('item_id');
+
 
         // Estímulos
         $stimulusContent = [];
@@ -273,19 +297,19 @@ class SimulacroController extends Controller
             $itemsRows = $blockItems->get($b->id) ?? collect();
 
             $itemsDTO = $itemsRows->map(function($ir) use ($itemContents, $choicesRows, $solutions, $stats) {
-                $labels = ['A','B','C'];
+                $letters = ['A','B','C','D'];
                 $choicesForItem = ($choicesRows[$ir->item_id] ?? collect());
 
-                $choices = array_map(function($lbl) use ($choicesForItem) {
-                    $found = $choicesForItem->firstWhere('label', $lbl);
+                $choices = array_map(function($ltr) use ($choicesForItem) {
+                    $found = $choicesForItem->firstWhere('letter', $ltr);
                     $payload = $found?->content_json ?? json_encode([
                         ['type'=>'paragraph','data'=>['text'=>'(sin contenido)']]
                     ]);
                     return [
-                        'label' => $lbl,
+                        'letter' => $ltr,
                         'content_json' => is_string($payload) ? json_decode($payload, true) : $payload,
                     ];
-                }, $labels);
+                }, $letters);
 
                 $sol = $solutions->get($ir->item_id);
                 $solution = $sol ? [

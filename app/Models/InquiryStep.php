@@ -2,35 +2,74 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InquiryStep extends Model
 {
-    use HasFactory;
-
-    protected $guarded = [];
-
-    /**
-     * Definimos que la columna 'simulation_data' es un JSON/array.
-     */
-    protected $casts = [
-        'simulation_data' => 'array',
+    protected $fillable = [
+        'inquiry_id',
+        'order',
+        'step_type',
+        'title',
+        'content',
+        'simulator_config',
+        'xp_reward',
+        'is_required',
     ];
 
-    /**
-     * Relación: Un paso pertenece a una Indagación.
-     */
-    public function inquiry()
+    protected $casts = [
+        'content' => 'array',
+        'simulator_config' => 'array',
+        'is_required' => 'boolean',
+    ];
+
+    // Relaciones
+    public function inquiry(): BelongsTo
     {
         return $this->belongsTo(Inquiry::class);
     }
 
-    /**
-     * Relación: Un paso (si es 'multiple_choice') tiene muchas opciones.
-     */
-    public function inquiryOptions()
+    public function options(): HasMany
     {
-        return $this->hasMany(InquiryOption::class);
+        return $this->hasMany(InquiryStepOption::class)->orderBy('order');
+    }
+
+    public function responses(): HasMany
+    {
+        return $this->hasMany(InquiryStepResponse::class);
+    }
+
+    public function assets(): HasMany
+    {
+        return $this->hasMany(InquiryAsset::class);
+    }
+
+    public function stats()
+    {
+        return $this->hasOne(InquiryStepStats::class);
+    }
+
+    // Métodos de utilidad
+    public function isMultipleChoice(): bool
+    {
+        return $this->step_type === 'multiple_choice';
+    }
+
+    public function hasSimulator(): bool
+    {
+        return $this->step_type === 'experiment' && !empty($this->simulator_config);
+    }
+
+    public function getSimulatorType(): ?string
+    {
+        return $this->simulator_config['type'] ?? null;
+    }
+
+    // Scope para ordenar
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order');
     }
 }

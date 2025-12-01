@@ -136,18 +136,45 @@ class ProfesorController extends Controller
     $itemIds     = $itemRows->pluck('id')->all();
     $stimulusIds = $itemRows->pluck('stimulus_id')->filter()->unique()->all();
 
-    // 8) Cargar contenidos por lote
-    $itemContents = DB::table('item_contents')
-        ->select('item_id','content_json')
-        ->whereIn('item_id', $itemIds)
-        ->where('is_current', true)
+    // 8) Cargar contenidos por lote (optimizado: items.question_json primero, luego item_contents)
+    // Primero intentar leer de items.question_json (sistema nuevo)
+    $itemsWithContent = DB::table('items')
+        ->select('id', 'question_json')
+        ->whereIn('id', $itemIds)
         ->get()
-        ->keyBy('item_id');
+        ->keyBy('id');
+    
+    // Identificar ítems sin question_json (sistema legacy)
+    $missingIds = [];
+    foreach ($itemsWithContent as $id => $item) {
+        if (!$item->question_json) {
+            $missingIds[] = $id;
+        }
+    }
+    
+    // Solo si hay ítems legacy, consultar item_contents
+    $legacyContents = collect();
+    if (!empty($missingIds)) {
+        $legacyContents = DB::table('item_contents')
+            ->select('item_id', 'content_json')
+            ->whereIn('item_id', $missingIds)
+            ->where('is_current', true)
+            ->get()
+            ->keyBy('item_id');
+    }
+    
+    // Combinar en una estructura unificada
+    $itemContents = $itemsWithContent->map(function($item) use ($legacyContents) {
+        return (object)[
+            'item_id' => $item->id,
+            'content_json' => $item->question_json ?? ($legacyContents[$item->id]->content_json ?? null)
+        ];
+    })->keyBy('item_id');
 
     $choicesRows = DB::table('choices')
-        ->select('item_id','label','content_json')
+        ->select('item_id','letter','content_json')
         ->whereIn('item_id', $itemIds)
-        ->orderBy('label')
+        ->orderBy('letter')
         ->get()
         ->groupBy('item_id');
 
@@ -181,19 +208,19 @@ class ProfesorController extends Controller
 
     // 9) Armar DTO de problems
     $problems = $itemRows->map(function($row) use ($itemContents, $choicesRows, $solutions, $stimulusContents, $stats) {
-        // Choices A/B/C (si falta alguna, pongo bloque mínimo)
-        $labels = ['A','B','C'];
+        // Choices A/B/C/D (si falta alguna, pongo bloque mínimo)
+        $letters = ['A','B','C','D'];
         $choicesForItem = ($choicesRows[$row->id] ?? collect());
-        $choices = array_map(function($lbl) use ($choicesForItem) {
-            $found = $choicesForItem->firstWhere('label', $lbl);
+        $choices = array_map(function($ltr) use ($choicesForItem) {
+            $found = $choicesForItem->firstWhere('letter', $ltr);
             $payload = $found?->content_json ?? json_encode([
                 ['type'=>'paragraph','data'=>['text'=>'(sin contenido)']]
             ]);
             return [
-                'label' => $lbl,
+                'letter' => $ltr,
                 'content_json' => is_string($payload) ? json_decode($payload, true) : $payload,
             ];
-        }, $labels);
+        }, $letters);
 
         // Solución: no aplico política de ocultar aquí; si quieres ocultar a no-suscriptores, filtra antes de asignar.
         $sol = $solutions->get($row->id);

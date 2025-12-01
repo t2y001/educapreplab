@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Inquiry extends Model
 {
@@ -15,36 +17,55 @@ class Inquiry extends Model
      */
     protected $guarded = [];
 
-    /**
-     * Relación: Una indagación tiene muchos pasos.
-     */
-    public function inquirySteps()
+    protected $casts = [
+        'content' => 'array',
+    ];
+
+    // Relaciones
+    public function creator(): BelongsTo
     {
-        // Importante: Los ordenamos por la columna 'order'
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function userProgress(): HasMany
+    {
+        return $this->hasMany(UserInquiryProgress::class);
+    }
+
+    // Nuevas relaciones para sistema relacional
+    public function steps(): HasMany
+    {
         return $this->hasMany(InquiryStep::class)->orderBy('order');
     }
 
-    /**
-     * Relación: Una indagación pertenece a un Área.
-     */
-    public function area()
+    public function assets(): HasMany
     {
-        return $this->belongsTo(Area::class);
+        return $this->hasMany(InquiryAsset::class)->orderBy('order');
     }
 
-    /**
-     * Relación: Una indagación pertenece a un Tema.
-     */
-    public function tema()
+    public function responses(): HasMany
     {
-        return $this->belongsTo(Tema::class);
+        return $this->hasMany(InquiryStepResponse::class);
     }
 
-    /**
-     * Relación: Una indagación pertenece a un Subtema.
-     */
-    public function subtema()
+    // Métodos de utilidad
+    public function hasSteps(): bool
     {
-        return $this->belongsTo(Subtema::class);
+        return $this->steps()->exists();
+    }
+
+    public function getTotalSteps(): int
+    {
+        // Soporte para ambos sistemas
+        if ($this->hasSteps()) {
+            return $this->steps()->count();
+        }
+        return count($this->content['steps'] ?? []);
+    }
+
+    public function getStep(int $stepNumber): ?array
+    {
+        $steps = $this->content['steps'] ?? [];
+        return $steps[$stepNumber - 1] ?? null;
     }
 }

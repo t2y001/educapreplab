@@ -1,64 +1,64 @@
 import { useEffect, useState } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { ArrowLeft, ChevronLeft, ChevronRight, BookOpen, FileText, Clock, Target, RotateCcw } from "lucide-react";
-import {CheckCircle2, Timer, TrendingUp} from "lucide-react";
+import { CheckCircle2, Timer, TrendingUp } from "lucide-react";
 
 // UI (shadcn/ui). Ajusta import paths si usas otros componentes UI.
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card } from "@/Components/ui/card";
 import { Progress } from "@/Components/ui/progress";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/Components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 
 // Tus componentes
 import { ContentBlocks } from "@/Components/ContentBlocks";
 import { ChoicesList } from "@/Components/ChoicesList";
 
-import type {PageProps as InertiaPageProps} from "@inertiajs/core";
+import type { PageProps as InertiaPageProps } from "@inertiajs/core";
 
 import { route } from 'ziggy-js';
 
 
 // ================== Tipos ==================
 type Block = any; // (ya lo tipaste dentro de ContentBlocks)
-type ChoiceDTO = { label: 'A'|'B'|'C'; content_json: Block[] };
+type ChoiceDTO = { letter: 'A' | 'B' | 'C' | 'D'; content_json: Block[] };
 
 type ProblemStats = {
   avg_time_sec: number | null;               // segundos promedio
   correct_rate: number | null;               // 0..1
   attempts: number;                          // n° intentos comunidad
-  community_difficulty: 'fácil'|'media'|'difícil'|null;
+  community_difficulty: 'fácil' | 'media' | 'difícil' | null;
 };
 
 type ProblemDTO = {
   id: number;
-  answer_key: 'A'|'B'|'C';
+  answer_key: 'A' | 'B' | 'C' | 'D';
   stimulus_blocks: Block[];
   item_blocks: Block[];
   choices: ChoiceDTO[];
-  solution?: { explanation_json: Block[]; misconception_json?: Block[]; visibility?: 'inherit'|'public'|'subscribers'|'private' };
+  solution?: { explanation_json: Block[]; misconception_json?: Block[]; visibility?: 'inherit' | 'public' | 'subscribers' | 'private' };
   stimulus_author?: string | null;
   stats?: ProblemStats;
-  difficulty?: 'fácil'|'media'|'difícil'; // (si quieres mostrar la dificultad oficial además de la comunitaria)
+  difficulty?: 'fácil' | 'media' | 'difícil'; // (si quieres mostrar la dificultad oficial además de la comunitaria)
   skill?: string;
 };
 
-type Subtopic = { id:number; nombre:string; nombreCorto?:string; slug?:string };
-type Eje = { id:number; nombre:string; nombreCorto?:string; slug?:string; subtemas:Subtopic[] };
-type Topic = { id:number; nombre:string; nombreCorto?:string; slug?:string; ejes:Eje[]; standaloneSubtopics:Subtopic[] };
+type Subtopic = { id: number; nombre: string; nombreCorto?: string; slug?: string };
+type Eje = { id: number; nombre: string; nombreCorto?: string; slug?: string; subtemas: Subtopic[] };
+type Topic = { id: number; nombre: string; nombreCorto?: string; slug?: string; ejes: Eje[]; standaloneSubtopics: Subtopic[] };
 
-type SubjectDTO = { slug:string; title:string; audienciaId:number; audiencia:string; descripcion:string; problemCount:number };
+type SubjectDTO = { slug: string; title: string; audienciaId: number; audiencia: string; descripcion: string; problemCount: number };
 
-interface AppPageProps extends InertiaPageProps{
+interface AppPageProps extends InertiaPageProps {
   subject: SubjectDTO;
   topics: Topic[];
   problems: ProblemDTO[];
-  pagination: { page:number; perPage:number; total:number; hasMore:boolean };
-  activeFilters: { tema_id:number|null; eje_id:number|null; subtema_id:number|null; mode:'temas'|'random'|'random_adaptive' };
+  pagination: { page: number; perPage: number; total: number; hasMore: boolean };
+  activeFilters: { tema_id: number | null; eje_id: number | null; subtema_id: number | null; mode: 'temas' | 'random' | 'random_adaptive' };
   // En muchos stacks Inertia/Laravel se comparte el usuario en props.auth.user
-  auth?: { user?: { id:number; name:string; isSubscriber?: boolean } };
-  user?: { id:number; name:string; isSubscriber?: boolean }; // fallback por si lo compartes así
+  auth?: { user?: { id: number; name: string; isSubscriber?: boolean } };
+  user?: { id: number; name: string; isSubscriber?: boolean }; // fallback por si lo compartes así
 }
 
 // ================== Página ==================
@@ -70,7 +70,7 @@ export default function SubjectPage() {
   const isSubscriber = Boolean(props.auth?.user?.isSubscriber ?? props.user?.isSubscriber ?? false);
 
   // Modo: 'temas' | 'random' | 'random_adaptive'
-  const [mode, setMode] = useState<'temas'|'random'|'random_adaptive'>(activeFilters.mode ?? 'temas');
+  const [mode, setMode] = useState<'temas' | 'random' | 'random_adaptive'>(activeFilters.mode ?? 'temas');
 
   // Selección actual (por IDs)
   const [selectedTopic, setSelectedTopic] = useState<number | null>(activeFilters.tema_id ?? null);
@@ -88,7 +88,7 @@ export default function SubjectPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentProblem = problems[currentIndex] || null;
   const progress = problems.length > 0 ? ((currentIndex + 1) / problems.length) * 100 : 0;
-  const questionNumber = ((pagination.page-1) * pagination.perPage) + (currentIndex + 1);
+  const questionNumber = ((pagination.page - 1) * pagination.perPage) + (currentIndex + 1);
 
 
   // Interacción
@@ -103,10 +103,10 @@ export default function SubjectPage() {
   const toggleEje = (ejeId: number) =>
     setExpandedEjes((s) => ({ ...s, [ejeId]: !s[ejeId] }));
 
-  const topicById = (id?: number|null) => topics.find(t => t.id === id!);
-  const ejeById = (topicId?: number|null, ejeId?: number|null) =>
+  const topicById = (id?: number | null) => topics.find(t => t.id === id!);
+  const ejeById = (topicId?: number | null, ejeId?: number | null) =>
     topicById(topicId)?.ejes.find(e => e.id === ejeId!);
-  const subtemaName = (topicId?: number|null, ejeId?: number|null, subId?: number|null) => {
+  const subtemaName = (topicId?: number | null, ejeId?: number | null, subId?: number | null) => {
     if (!subId) return null;
     if (ejeId) {
       return ejeById(topicId, ejeId)?.subtemas.find(s => s.id === subId)?.nombreCorto
@@ -117,12 +117,12 @@ export default function SubjectPage() {
   };
 
   const topicName = selectedTopic ? (topicById(selectedTopic)?.nombreCorto || topicById(selectedTopic)?.nombre) : null;
-  const ejeName   = selectedEjeId ? (ejeById(selectedTopic, selectedEjeId)?.nombreCorto || ejeById(selectedTopic, selectedEjeId)?.nombre) : null;
-  const subName   = subtemaName(selectedTopic, selectedEjeId, selectedSubtopic);
+  const ejeName = selectedEjeId ? (ejeById(selectedTopic, selectedEjeId)?.nombreCorto || ejeById(selectedTopic, selectedEjeId)?.nombre) : null;
+  const subName = subtemaName(selectedTopic, selectedEjeId, selectedSubtopic);
 
 
   // Navegar con filtros (Inertia GET). Mantiene estado/scroll.
-  const applyFilters = (overrides: Partial<{ tema_id:number|null; eje_id:number|null; subtema_id:number|null; mode:'temas'|'random'|'random_adaptive'; page:number; per_page:number }>) => {
+  const applyFilters = (overrides: Partial<{ tema_id: number | null; eje_id: number | null; subtema_id: number | null; mode: 'temas' | 'random' | 'random_adaptive'; page: number; per_page: number }>) => {
     const q = {
       tema_id: overrides.tema_id ?? selectedTopic,
       eje_id: overrides.eje_id ?? selectedEjeId,
@@ -163,8 +163,8 @@ export default function SubjectPage() {
     setSelectedSubtopic(ns);
     setMode(nm);
 
-    setExpandedTopics(prev => (nt ? {...prev, [nt]: true} : prev));
-    setExpandedEjes(prev => (ne ? {...prev, [ne]: true} : prev));
+    setExpandedTopics(prev => (nt ? { ...prev, [nt]: true } : prev));
+    setExpandedEjes(prev => (ne ? { ...prev, [ne]: true } : prev));
   }, [activeFilters.tema_id, activeFilters.eje_id, activeFilters.subtema_id, activeFilters.mode, subject.slug]);
 
   // ================== Render ==================
@@ -240,11 +240,10 @@ export default function SubjectPage() {
                 setCurrentIndex(0);
                 applyFilters({ tema_id: null, eje_id: null, subtema_id: null, page: 1 });
               }}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedTopic === null && selectedEjeId === null && selectedSubtopic === null
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-accent"
-              }`}
+              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedTopic === null && selectedEjeId === null && selectedSubtopic === null
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground hover:bg-accent"
+                }`}
             >
               Todos los temas
             </button>
@@ -268,9 +267,8 @@ export default function SubjectPage() {
                           setCurrentIndex(0);
                           applyFilters({ tema_id: topic.id, eje_id: null, subtema_id: null, page: 1 });
                         }}
-                        className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                          isTopicSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
-                        }`}
+                        className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${isTopicSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
+                          }`}
                         title="Ver problemas del tema"
                       >
                         {topic.nombreCorto || topic.nombre}
@@ -284,7 +282,7 @@ export default function SubjectPage() {
                         title={isTopicExpanded ? "Cerrar" : "Abrir"}
                       >
                         <svg className={`w-4 h-4 transition-transform ${isTopicExpanded ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
                     </div>
@@ -310,9 +308,8 @@ export default function SubjectPage() {
                                         setCurrentIndex(0);
                                         applyFilters({ tema_id: topic.id, eje_id: eje.id, subtema_id: null, page: 1 });
                                       }}
-                                      className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        isEjeSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
-                                      }`}
+                                      className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${isEjeSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent"
+                                        }`}
                                       title="Ver problemas del eje"
                                     >
                                       {eje.nombreCorto || eje.nombre}
@@ -326,7 +323,7 @@ export default function SubjectPage() {
                                       title={isEjeExpanded ? "Cerrar subtemas" : "Abrir subtemas"}
                                     >
                                       <svg className={`w-4 h-4 transition-transform ${isEjeExpanded ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                       </svg>
                                     </button>
                                   </div>
@@ -347,11 +344,10 @@ export default function SubjectPage() {
                                             setCurrentIndex(0);
                                             applyFilters({ tema_id: topic.id, eje_id: eje.id, subtema_id: sub.id, page: 1 });
                                           }}
-                                          className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                                            selectedSubtopic === sub.id && selectedEjeId === eje.id
-                                              ? "bg-primary/10 text-primary font-medium"
-                                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                          }`}
+                                          className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${selectedSubtopic === sub.id && selectedEjeId === eje.id
+                                            ? "bg-primary/10 text-primary font-medium"
+                                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                            }`}
                                           title="Ver problemas del subtema"
                                         >
                                           {sub.nombreCorto || sub.nombre}
@@ -377,11 +373,10 @@ export default function SubjectPage() {
                                       setCurrentIndex(0);
                                       applyFilters({ tema_id: topic.id, eje_id: null, subtema_id: sub.id, page: 1 });
                                     }}
-                                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                                      selectedSubtopic === sub.id && selectedEjeId === null
-                                        ? "bg-primary/10 text-primary font-medium"
-                                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                    }`}
+                                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${selectedSubtopic === sub.id && selectedEjeId === null
+                                      ? "bg-primary/10 text-primary font-medium"
+                                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                      }`}
                                     title="Ver problemas del subtema"
                                   >
                                     {sub.nombreCorto || sub.nombre}
@@ -406,11 +401,10 @@ export default function SubjectPage() {
                                   setCurrentIndex(0);
                                   applyFilters({ tema_id: topic.id, eje_id: null, subtema_id: sub.id, page: 1 });
                                 }}
-                                className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                                  selectedSubtopic === sub.id
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                }`}
+                                className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${selectedSubtopic === sub.id
+                                  ? "bg-primary/10 text-primary font-medium"
+                                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                  }`}
                                 title="Ver problemas del subtema"
                               >
                                 {sub.nombreCorto || sub.nombre}
@@ -431,162 +425,162 @@ export default function SubjectPage() {
         <main className="flex-1 overflow-y-auto">
           <div className="container max-w-4xl mx-auto p-6">
             {/* Métricas superiores (comunidad) */}
-<TooltipProvider>
-  <div className="grid grid-cols-4 gap-4 mb-6">
-    {mode === "temas" ? (
-      <>
-        {/* Dificultad + % éxito */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Card className="p-4 cursor-help">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Dificultad</span>
+            <TooltipProvider>
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                {mode === "temas" ? (
+                  <>
+                    {/* Dificultad + % éxito */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="p-4 cursor-help">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="w-4 h-4 text-primary" />
+                            <span className="text-xs text-muted-foreground">Dificultad</span>
+                          </div>
+                          <div className="space-y-2">
+                            {(() => {
+                              const diff = currentProblem?.stats?.community_difficulty; // 'fácil'|'media'|'difícil'|null
+                              const pill = diff === 'fácil'
+                                ? { cls: "bg-green-500/10 text-green-600 dark:text-green-400", label: "🟢 Fácil" }
+                                : diff === 'media'
+                                  ? { cls: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400", label: "🟡 Medio" }
+                                  : diff === 'difícil'
+                                    ? { cls: "bg-red-500/10 text-red-600 dark:text-red-400", label: "🔴 Difícil" }
+                                    : { cls: "bg-muted text-muted-foreground", label: "—" };
+                              return (
+                                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${pill.cls}`}>
+                                  {pill.label}
+                                </div>
+                              );
+                            })()}
+                            <p className="text-xs text-muted-foreground">
+                              {currentProblem?.stats?.correct_rate != null
+                                ? `${Math.round(currentProblem.stats.correct_rate * 100)}% de éxito`
+                                : "—"}
+                            </p>
+                          </div>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">
+                          {currentProblem?.stats?.attempts
+                            ? `Basado en ${currentProblem.stats.attempts} intentos de la comunidad`
+                            : "Aún sin datos suficientes"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Tasa de éxito */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="p-4 cursor-help">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle2 className="w-4 h-4 text-accent" />
+                            <span className="text-xs text-muted-foreground">Tasa de éxito</span>
+                          </div>
+                          <p className="text-2xl font-bold text-foreground">
+                            {currentProblem?.stats?.correct_rate != null
+                              ? `${Math.round(currentProblem.stats.correct_rate * 100)}%`
+                              : "—"}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">en la comunidad</p>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">
+                          {currentProblem?.stats?.attempts
+                            ? `Promedio: ${currentProblem.stats.attempts} intentos`
+                            : "Aún sin datos"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Tiempo promedio */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="p-4 cursor-help">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Timer className="w-4 h-4 text-primary" />
+                            <span className="text-xs text-muted-foreground">Tiempo promedio</span>
+                          </div>
+                          <p className="text-2xl font-bold text-foreground">
+                            {currentProblem?.stats?.avg_time_sec != null
+                              ? `${Math.floor(currentProblem.stats.avg_time_sec / 60)}:${String(currentProblem.stats.avg_time_sec % 60).padStart(2, "0")}`
+                              : "—"}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">de la comunidad</p>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">
+                          Este tiempo es el promedio que tarda la comunidad en resolver este problema.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Competencia (si la tienes en el DTO) */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="p-4 cursor-help">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="w-4 h-4 text-secondary" />
+                            <span className="text-xs text-muted-foreground">Competencia</span>
+                          </div>
+                          <p className="text-sm font-semibold text-foreground leading-tight">
+                            {currentProblem?.skill ?? "—"}
+                          </p>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">
+                          Este problema mide tu capacidad en esta competencia específica.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
+                ) : (
+                  // Cuando NO es 'temas' (p.ej. random/adaptativo) mantenemos tus cards de progreso
+                  <>
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-primary" />
+                        <span className="text-xs text-muted-foreground">Progreso</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Progress value={problems.length ? ((currentIndex + 1) / problems.length) * 100 : 0} className="h-2" />
+                        <p className="text-sm font-semibold">
+                          {problems.length ? (currentIndex + 1) : 0} / {problems.length}
+                        </p>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-accent" />
+                        <span className="text-xs text-muted-foreground">Puntaje</span>
+                      </div>
+                      <p className="text-2xl font-bold text-foreground">—</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <RotateCcw className="w-4 h-4 text-secondary" />
+                        <span className="text-xs text-muted-foreground">Intentos</span>
+                      </div>
+                      <p className="text-2xl font-bold text-foreground">—</p>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="text-xs text-muted-foreground">Tiempo</span>
+                      </div>
+                      <p className="text-2xl font-bold text-foreground">—</p>
+                    </Card>
+                  </>
+                )}
               </div>
-              <div className="space-y-2">
-                {(() => {
-                  const diff = currentProblem?.stats?.community_difficulty; // 'fácil'|'media'|'difícil'|null
-                  const pill = diff === 'fácil'
-                    ? { cls: "bg-green-500/10 text-green-600 dark:text-green-400", label: "🟢 Fácil" }
-                    : diff === 'media'
-                    ? { cls: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400", label: "🟡 Medio" }
-                    : diff === 'difícil'
-                    ? { cls: "bg-red-500/10 text-red-600 dark:text-red-400", label: "🔴 Difícil" }
-                    : { cls: "bg-muted text-muted-foreground", label: "—" };
-                  return (
-                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${pill.cls}`}>
-                      {pill.label}
-                    </div>
-                  );
-                })()}
-                <p className="text-xs text-muted-foreground">
-                  {currentProblem?.stats?.correct_rate != null
-                    ? `${Math.round(currentProblem.stats.correct_rate * 100)}% de éxito`
-                    : "—"}
-                </p>
-              </div>
-            </Card>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">
-              {currentProblem?.stats?.attempts
-                ? `Basado en ${currentProblem.stats.attempts} intentos de la comunidad`
-                : "Aún sin datos suficientes"}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Tasa de éxito */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Card className="p-4 cursor-help">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="w-4 h-4 text-accent" />
-                <span className="text-xs text-muted-foreground">Tasa de éxito</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {currentProblem?.stats?.correct_rate != null
-                  ? `${Math.round(currentProblem.stats.correct_rate * 100)}%`
-                  : "—"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">en la comunidad</p>
-            </Card>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">
-              {currentProblem?.stats?.attempts
-                ? `Promedio: ${currentProblem.stats.attempts} intentos`
-                : "Aún sin datos"}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Tiempo promedio */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Card className="p-4 cursor-help">
-              <div className="flex items-center gap-2 mb-2">
-                <Timer className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Tiempo promedio</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {currentProblem?.stats?.avg_time_sec != null
-                  ? `${Math.floor(currentProblem.stats.avg_time_sec / 60)}:${String(currentProblem.stats.avg_time_sec % 60).padStart(2, "0")}`
-                  : "—"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">de la comunidad</p>
-            </Card>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">
-              Este tiempo es el promedio que tarda la comunidad en resolver este problema.
-            </p>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Competencia (si la tienes en el DTO) */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Card className="p-4 cursor-help">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-secondary" />
-                <span className="text-xs text-muted-foreground">Competencia</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground leading-tight">
-                {currentProblem?.skill ?? "—"}
-              </p>
-            </Card>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">
-              Este problema mide tu capacidad en esta competencia específica.
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </>
-    ) : (
-      // Cuando NO es 'temas' (p.ej. random/adaptativo) mantenemos tus cards de progreso
-      <>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Progreso</span>
-          </div>
-          <div className="space-y-2">
-            <Progress value={problems.length ? ((currentIndex + 1) / problems.length) * 100 : 0} className="h-2" />
-            <p className="text-sm font-semibold">
-              {problems.length ? (currentIndex + 1) : 0} / {problems.length}
-            </p>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-accent" />
-            <span className="text-xs text-muted-foreground">Puntaje</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">—</p>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <RotateCcw className="w-4 h-4 text-secondary" />
-            <span className="text-xs text-muted-foreground">Intentos</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">—</p>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Tiempo</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">—</p>
-        </Card>
-      </>
-    )}
-  </div>
-</TooltipProvider>
+            </TooltipProvider>
 
 
             {/* Problema */}
@@ -667,7 +661,7 @@ export default function SubjectPage() {
                   </div>
 
                   <h2 className="text-lg font-semibold mb-4">Pregunta {questionNumber}</h2>
-                  <div className = "prose prose-base max-w-none dark:prose-invert">
+                  <div className="prose prose-base max-w-none dark:prose-invert">
                     <ContentBlocks blocks={currentProblem.item_blocks} />
                   </div>
 
@@ -798,7 +792,7 @@ export default function SubjectPage() {
             </div>
           )}
         </div>
-        
+
       )}
     </div>
   );
